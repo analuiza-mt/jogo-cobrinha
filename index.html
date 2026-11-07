@@ -1,0 +1,1454 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1117">
+<title>Neon Snake | Arcade</title>
+
+<style>
+:root {
+    --bg: #0b1117;
+    --panel: #14212a;
+    --panel-dark: #0c151c;
+    --text: #edf7f5;
+    --muted: #93a9b0;
+    --green: #59f2a6;
+    --yellow: #ffd166;
+    --red: #ff647c;
+    --line: #263944;
+    --accent: var(--green);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 24px 16px;
+    background: radial-gradient(ellipse at top, #182a33, #0b1117 65%);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+button:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 3px;
+}
+
+.app {
+    width: min(100%, 1000px);
+    margin: auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.logo {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    background: var(--green);
+    color: #082117;
+    font-size: 27px;
+    box-shadow: 0 8px 30px #59f2a62b;
+}
+
+.eyebrow {
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 2px 0 0;
+    font-size: clamp(24px, 4vw, 34px);
+    letter-spacing: -1.5px;
+}
+
+.header-tag {
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    padding: 9px 13px;
+    font-size: 12px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+    align-items: start;
+}
+
+.card {
+    background: linear-gradient(160deg, #14212a, #101920);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: 0 18px 60px #0002;
+}
+
+.game-card {
+    padding: 17px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 14px;
+}
+
+.stat {
+    min-width: 0;
+    padding: 11px;
+    background: var(--panel-dark);
+    border: 1px solid #20323c;
+    border-radius: 13px;
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    margin-top: 4px;
+    font-size: 24px;
+    font-weight: 850;
+    letter-spacing: -1px;
+    white-space: nowrap;
+}
+
+#score.bump {
+    animation: bump 0.22s ease-out;
+}
+
+@keyframes bump {
+    50% {
+        transform: scale(1.2);
+        color: var(--green);
+    }
+}
+
+.board-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    aspect-ratio: 1;
+    background: #0a1518;
+    border: 1px solid #29413d;
+    border-radius: 15px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+    background: #071014dc;
+    backdrop-filter: blur(7px);
+    text-align: center;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlay-box {
+    max-width: 330px;
+}
+
+.overlay-icon {
+    margin-bottom: 8px;
+    font-size: 38px;
+}
+
+.overlay h2 {
+    margin: 0 0 8px;
+    font-size: clamp(24px, 4vw, 32px);
+    letter-spacing: -1px;
+}
+
+.overlay p {
+    margin: 0 0 18px;
+    color: #a9bec2;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.btn {
+    padding: 12px 16px;
+    color: #062218;
+    background: var(--green);
+    border: 0;
+    border-radius: 12px;
+    font-weight: 800;
+    transition: transform 0.15s, filter 0.15s;
+}
+
+.btn:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    transform: none;
+}
+
+.btn.secondary {
+    color: var(--text);
+    background: #1b2c36;
+    border: 1px solid #304651;
+}
+
+.game-actions {
+    display: flex;
+    gap: 9px;
+    margin-top: 13px;
+}
+
+.game-actions .btn {
+    flex: 1;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.side-card {
+    padding: 18px;
+}
+
+.side-title {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.difficulty-list {
+    display: grid;
+    gap: 8px;
+}
+
+.diff {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    color: var(--text);
+    text-align: left;
+    background: #111c24;
+    border: 1px solid #2a3d47;
+    border-radius: 13px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.diff[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--diff) 10%, #111c24);
+    border-color: var(--diff);
+    box-shadow: inset 3px 0 var(--diff);
+}
+
+.diff-dot {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    background: var(--diff);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--diff);
+}
+
+.diff strong,
+.diff small {
+    display: block;
+}
+
+.diff strong {
+    font-size: 14px;
+}
+
+.diff small {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.check {
+    margin-left: auto;
+    color: var(--diff);
+    opacity: 0;
+}
+
+.diff[aria-pressed="true"] .check {
+    opacity: 1;
+}
+
+.difficulty-note {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.record-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.record-number {
+    color: var(--yellow);
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -1px;
+}
+
+.record-cup {
+    font-size: 25px;
+}
+
+.keys {
+    display: grid;
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: repeat(2, 36px);
+    justify-content: center;
+    gap: 5px;
+    margin: 4px 0 12px;
+}
+
+.key {
+    display: grid;
+    place-items: center;
+    background: #1a2b34;
+    border: 1px solid #344954;
+    border-radius: 8px;
+    color: #dcebe8;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.key.up {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.key.left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.key.down {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.key.right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.help {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.help b {
+    color: var(--text);
+}
+
+.mobile-controls {
+    display: none;
+    grid-template-columns: repeat(3, 54px);
+    grid-template-rows: repeat(2, 48px);
+    justify-content: center;
+    gap: 7px;
+    margin-top: 15px;
+}
+
+.pad {
+    color: var(--text);
+    background: #172831;
+    border: 1px solid #2b424b;
+    border-radius: 13px;
+    font-size: 20px;
+    font-weight: 900;
+    touch-action: manipulation;
+}
+
+.pad:active {
+    background: #29434c;
+}
+
+.pad.up {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.pad.left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.pad.down {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.pad.right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.toast {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    z-index: 5;
+    padding: 12px 18px;
+    color: #082719;
+    background: #d9ffeb;
+    border-radius: 999px;
+    font-weight: 900;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -18px);
+    transition: all 0.25s;
+    box-shadow: 0 10px 35px #0006;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+footer {
+    margin-top: 20px;
+    color: #6f858d;
+    font-size: 11px;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+    body {
+        padding: 17px 12px 28px;
+    }
+
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .header-tag {
+        display: none;
+    }
+
+    .game-card {
+        padding: 12px;
+    }
+
+    .sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .difficulty-card {
+        grid-column: 1 / -1;
+    }
+
+    .side-card {
+        padding: 15px;
+    }
+
+    .mobile-controls {
+        display: grid;
+    }
+}
+
+@media (max-width: 420px) {
+    .sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .difficulty-card {
+        grid-column: auto;
+    }
+
+    .stat {
+        padding: 9px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .stats {
+        gap: 6px;
+    }
+
+    .game-actions {
+        flex-direction: column;
+    }
+
+    .game-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+</style>
+</head>
+
+<body>
+<main class="app">
+
+    <header>
+        <div class="brand">
+            <div class="logo" aria-hidden="true">🐍</div>
+            <div>
+                <div class="eyebrow">Arcade clássico</div>
+                <h1>Neon Snake<span style="color:var(--green)">.</span></h1>
+            </div>
+        </div>
+        <div class="header-tag">✦ Jogue. Cresça. Supere seu recorde.</div>
+    </header>
+
+    <div class="layout">
+
+        <section class="card game-card" aria-label="Área do jogo">
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Pontuação</div>
+                    <div class="stat-value" id="score" aria-live="polite">000</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">Recorde</div>
+                    <div class="stat-value" id="highScore">000</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">Nível</div>
+                    <div class="stat-value" id="levelLabel" style="font-size:17px;padding-top:5px">
+                        Fácil
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-wrap">
+                <canvas id="board" width="600" height="600"
+                    aria-label="Tabuleiro do jogo Snake"></canvas>
+
+                <div class="overlay" id="overlay">
+                    <div class="overlay-box">
+                        <div class="overlay-icon" id="overlayIcon">🐍</div>
+                        <h2 id="overlayTitle">Pronto para jogar?</h2>
+                        <p id="overlayText">
+                            Colete as frutas, cresça e tente bater seu recorde.
+                            Não encoste nas paredes nem em você mesmo!
+                        </p>
+                        <button class="btn" id="overlayButton">Iniciar jogo</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-actions">
+                <button class="btn" id="startBtn">▶ Iniciar jogo</button>
+                <button class="btn secondary" id="pauseBtn" disabled>Ⅱ Pausar</button>
+                <button class="btn secondary" id="restartBtn">↻ Reiniciar</button>
+            </div>
+
+            <div class="mobile-controls" aria-label="Controles direcionais">
+                <button class="pad up" data-dir="up" aria-label="Cima">↑</button>
+                <button class="pad left" data-dir="left" aria-label="Esquerda">←</button>
+                <button class="pad down" data-dir="down" aria-label="Baixo">↓</button>
+                <button class="pad right" data-dir="right" aria-label="Direita">→</button>
+            </div>
+
+        </section>
+
+        <aside class="sidebar">
+
+            <section class="card side-card difficulty-card">
+                <h2 class="side-title">Escolha a dificuldade</h2>
+
+                <div class="difficulty-list" id="difficultyList">
+
+                    <button class="diff" style="--diff:var(--green)"
+                        data-level="easy" aria-pressed="true">
+                        <span class="diff-dot"></span>
+                        <span>
+                            <strong>Fácil</strong>
+                            <small>Tranquilo para começar</small>
+                        </span>
+                        <span class="check">✓</span>
+                    </button>
+
+                    <button class="diff" style="--diff:var(--yellow)"
+                        data-level="medium" aria-pressed="false">
+                        <span class="diff-dot"></span>
+                        <span>
+                            <strong>Médio</strong>
+                            <small>Ritmo equilibrado</small>
+                        </span>
+                        <span class="check">✓</span>
+                    </button>
+
+                    <button class="diff" style="--diff:var(--red)"
+                        data-level="hard" aria-pressed="false">
+                        <span class="diff-dot"></span>
+                        <span>
+                            <strong>Difícil</strong>
+                            <small>Reflexos no limite</small>
+                        </span>
+                        <span class="check">✓</span>
+                    </button>
+
+                </div>
+
+                <p class="difficulty-note">
+                    A velocidade aumenta conforme você marca pontos.
+                    O nível escolhido fica fixo durante a partida.
+                </p>
+            </section>
+
+            <section class="card side-card">
+                <h2 class="side-title">Seu recorde</h2>
+
+                <div class="record-row">
+                    <div>
+                        <div class="stat-label">Melhor pontuação</div>
+                        <div class="record-number" id="recordSide">000</div>
+                    </div>
+                    <div class="record-cup">🏆</div>
+                </div>
+
+                <p class="difficulty-note">
+                    Salvo neste navegador, mesmo depois de fechar a página.
+                </p>
+            </section>
+
+            <section class="card side-card">
+                <h2 class="side-title">Como jogar</h2>
+
+                <div class="keys" aria-hidden="true">
+                    <span class="key up">W / ↑</span>
+                    <span class="key left">A / ←</span>
+                    <span class="key down">S / ↓</span>
+                    <span class="key right">D / →</span>
+                </div>
+
+                <p class="help">
+                    <b>Mover:</b> setas ou W A S D.<br>
+                    <b>Pausar:</b> Espaço ou botão Pausar.<br>
+                    <b>Objetivo:</b> pegue as frutas e não bata!
+                </p>
+            </section>
+
+        </aside>
+    </div>
+
+    <footer>
+        NEON SNAKE · Feito para jogar offline · Seu recorde fica no seu dispositivo
+    </footer>
+</main>
+
+<div class="toast" id="toast" role="status">🏆 Novo recorde!</div>
+
+<script>
+"use strict";
+
+/* =========================================
+   1. CONFIGURAÇÕES E ELEMENTOS
+========================================= */
+
+const canvas = document.getElementById("board");
+const ctx = canvas.getContext("2d");
+
+const $ = id => document.getElementById(id);
+
+const SIZE = 20;
+const CELL = canvas.width / SIZE;
+const POINTS = 10;
+
+const LEVELS = {
+    easy: {
+        name: "Fácil",
+        color: "#59f2a6",
+        start: 190,
+        min: 95,
+        step: 4
+    },
+    medium: {
+        name: "Médio",
+        color: "#ffd166",
+        start: 135,
+        min: 65,
+        step: 5
+    },
+    hard: {
+        name: "Difícil",
+        color: "#ff647c",
+        start: 92,
+        min: 42,
+        step: 6
+    }
+};
+
+const STATE = {
+    READY: "ready",
+    RUNNING: "running",
+    PAUSED: "paused",
+    OVER: "over"
+};
+
+let state = STATE.READY;
+let selectedLevel = "easy";
+
+let snake = [];
+let direction = { x: 1, y: 0 };
+let nextDirection = { x: 1, y: 0 };
+
+let food = { x: 12, y: 10 };
+let score = 0;
+let highScore = readHighScore();
+
+let timer = null;
+let tickMs = LEVELS.easy.start;
+let newRecord = false;
+let toastTimer = null;
+
+
+/* =========================================
+   2. RECORDES E INTERFACE
+========================================= */
+
+function readHighScore() {
+    try {
+        return Math.max(
+            0,
+            Number(localStorage.getItem("neonSnakeHighScore")) || 0
+        );
+    } catch (error) {
+        return 0;
+    }
+}
+
+function updateStats() {
+    $("score").textContent = String(score).padStart(3, "0");
+    $("highScore").textContent = String(highScore).padStart(3, "0");
+    $("recordSide").textContent = String(highScore).padStart(3, "0");
+    $("levelLabel").textContent = LEVELS[selectedLevel].name;
+}
+
+function setState(nextState) {
+    state = nextState;
+
+    $("pauseBtn").disabled =
+        state !== STATE.RUNNING && state !== STATE.PAUSED;
+
+    $("pauseBtn").textContent =
+        state === STATE.PAUSED ? "▶ Continuar" : "Ⅱ Pausar";
+
+    $("startBtn").textContent =
+        state === STATE.PAUSED ? "▶ Continuar" :
+        state === STATE.RUNNING ? "▶ Em andamento" :
+        "▶ Iniciar jogo";
+
+    $("startBtn").disabled = state === STATE.RUNNING;
+}
+
+function showOverlay(icon, title, message, buttonText, action) {
+    $("overlayIcon").textContent = icon;
+    $("overlayTitle").textContent = title;
+    $("overlayText").textContent = message;
+    $("overlayButton").textContent = buttonText;
+    $("overlayButton").onclick = action;
+
+    $("overlay").classList.remove("hidden");
+}
+
+function hideOverlay() {
+    $("overlay").classList.add("hidden");
+}
+
+function showToast(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+        $("toast").classList.remove("show");
+    }, 1900);
+}
+
+
+/* =========================================
+   3. INICIALIZAÇÃO E REINÍCIO
+========================================= */
+
+function resetGame() {
+    clearInterval(timer);
+    timer = null;
+
+    score = 0;
+    newRecord = false;
+
+    const mid = Math.floor(SIZE / 2);
+
+    snake = [
+        { x: mid, y: mid },
+        { x: mid - 1, y: mid },
+        { x: mid - 2, y: mid }
+    ];
+
+    direction = { x: 1, y: 0 };
+    nextDirection = { x: 1, y: 0 };
+
+    tickMs = LEVELS[selectedLevel].start;
+
+    randomFood();
+    updateStats();
+    draw();
+
+    setState(STATE.READY);
+}
+
+function startGame() {
+    if (state === STATE.RUNNING) {
+        return;
+    }
+
+    if (state === STATE.OVER) {
+        resetGame();
+    }
+
+    hideOverlay();
+    setState(STATE.RUNNING);
+    runLoop();
+}
+
+function runLoop() {
+    clearInterval(timer);
+    timer = setInterval(tick, tickMs);
+}
+
+
+/* =========================================
+   4. ALIMENTOS
+========================================= */
+
+function randomFood() {
+    const freePositions = [];
+
+    for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+            const occupied = snake.some(part =>
+                part.x === x && part.y === y
+            );
+
+            if (!occupied) {
+                freePositions.push({ x, y });
+            }
+        }
+    }
+
+    if (freePositions.length === 0) {
+        finishGame(true);
+        return;
+    }
+
+    food = freePositions[
+        Math.floor(Math.random() * freePositions.length)
+    ];
+}
+
+
+/* =========================================
+   5. CONTROLE DE DIREÇÃO
+========================================= */
+
+function setDirection(dir) {
+    const directions = {
+        up: { x: 0, y: -1 },
+        down: { x: 0, y: 1 },
+        left: { x: -1, y: 0 },
+        right: { x: 1, y: 0 }
+    };
+
+    const target = directions[dir];
+
+    if (!target || state === STATE.OVER) {
+        return;
+    }
+
+    // Impede a cobra de inverter diretamente sua direção.
+    if (
+        target.x === -direction.x &&
+        target.y === -direction.y
+    ) {
+        return;
+    }
+
+    if (state === STATE.READY) {
+        nextDirection = target;
+        direction = target;
+        draw();
+        return;
+    }
+
+    nextDirection = target;
+}
+
+
+/* =========================================
+   6. MOVIMENTAÇÃO, COLISÃO E PONTUAÇÃO
+========================================= */
+
+function tick() {
+    if (state !== STATE.RUNNING) {
+        return;
+    }
+
+    direction = nextDirection;
+
+    const head = {
+        x: snake[0].x + direction.x,
+        y: snake[0].y + direction.y
+    };
+
+    const eating =
+        head.x === food.x &&
+        head.y === food.y;
+
+    /*
+      Se não estiver comendo, a última parte do corpo
+      vai sair desta posição. Por isso, ela não conta
+      como colisão nessa situação.
+    */
+    const bodyToCheck = eating
+        ? snake
+        : snake.slice(0, -1);
+
+    const hitWall =
+        head.x < 0 ||
+        head.y < 0 ||
+        head.x >= SIZE ||
+        head.y >= SIZE;
+
+    const hitBody = bodyToCheck.some(part =>
+        part.x === head.x &&
+        part.y === head.y
+    );
+
+    if (hitWall || hitBody) {
+        finishGame(false);
+        return;
+    }
+
+    snake.unshift(head);
+
+    if (eating) {
+        score += POINTS;
+
+        $("score").textContent = String(score).padStart(3, "0");
+
+        $("score").classList.remove("bump");
+        void $("score").offsetWidth;
+        $("score").classList.add("bump");
+
+        // Verifica se o jogador bateu seu recorde.
+        if (score > highScore) {
+            highScore = score;
+            newRecord = true;
+
+            try {
+                localStorage.setItem(
+                    "neonSnakeHighScore",
+                    String(highScore)
+                );
+            } catch (error) {
+                // O jogo continua mesmo se o armazenamento estiver bloqueado.
+            }
+
+            updateStats();
+            showToast("🏆 Novo recorde: " + highScore + "!");
+        } else {
+            updateStats();
+        }
+
+        randomFood();
+
+        // Aumenta a velocidade gradualmente.
+        const level = LEVELS[selectedLevel];
+
+        const newSpeed = Math.max(
+            level.min,
+            level.start - (score / POINTS) * level.step
+        );
+
+        if (newSpeed !== tickMs) {
+            tickMs = newSpeed;
+            runLoop();
+        }
+    } else {
+        snake.pop();
+    }
+
+    draw();
+}
+
+
+/* =========================================
+   7. GAME OVER E PAUSA
+========================================= */
+
+function finishGame(won) {
+    clearInterval(timer);
+    timer = null;
+
+    setState(STATE.OVER);
+
+    if (won) {
+        showOverlay(
+            "🏆",
+            "Tabuleiro completo!",
+            "Você ocupou todo o tabuleiro e marcou " +
+                score + " pontos. Incrível!",
+            "Jogar novamente",
+            startGame
+        );
+
+        return;
+    }
+
+    const title = newRecord ? "Novo recorde!" : "Fim de jogo";
+
+    const message = newRecord
+        ? "Você fez " + score +
+          " pontos e estabeleceu um novo recorde. Mandou muito bem!"
+        : "Você marcou " + score +
+          " pontos. Seu recorde continua em " +
+          highScore + ". Bora tentar de novo?";
+
+    showOverlay(
+        newRecord ? "🏆" : "💥",
+        title,
+        message,
+        "Jogar novamente",
+        startGame
+    );
+}
+
+function togglePause() {
+    if (state === STATE.RUNNING) {
+        clearInterval(timer);
+        timer = null;
+
+        setState(STATE.PAUSED);
+
+        showOverlay(
+            "Ⅱ",
+            "Jogo pausado",
+            "Prepare sua próxima jogada e volte quando quiser.",
+            "Continuar",
+            togglePause
+        );
+
+    } else if (state === STATE.PAUSED) {
+        hideOverlay();
+        setState(STATE.RUNNING);
+        runLoop();
+    }
+}
+
+
+/* =========================================
+   8. NÍVEIS DE DIFICULDADE
+========================================= */
+
+function chooseLevel(level) {
+    if (!LEVELS[level]) {
+        return;
+    }
+
+    // Não permite trocar a dificuldade durante uma partida.
+    if (
+        state === STATE.RUNNING ||
+        state === STATE.PAUSED
+    ) {
+        return;
+    }
+
+    selectedLevel = level;
+
+    document.querySelectorAll(".diff").forEach(button => {
+        button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.level === level)
+        );
+    });
+
+    document.documentElement.style.setProperty(
+        "--accent",
+        LEVELS[level].color
+    );
+
+    updateStats();
+    resetGame();
+
+    showOverlay(
+        "🐍",
+        "Pronto para jogar?",
+        "Dificuldade: " + LEVELS[level].name +
+            ". Colete as frutas e tente bater seu recorde!",
+        "Iniciar jogo",
+        startGame
+    );
+
+    draw();
+}
+
+
+/* =========================================
+   9. DESENHO DO TABULEIRO
+========================================= */
+
+function roundedRect(x, y, width, height, radius) {
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x,
+        y,
+        width,
+        height,
+        radius
+    );
+}
+
+function draw() {
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.fillStyle = "#0a1518";
+    ctx.fillRect(0, 0, width, height);
+
+    // Grade do tabuleiro.
+    ctx.strokeStyle = "#172b2d";
+    ctx.lineWidth = 1;
+
+    for (let i = 0; i <= SIZE; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * CELL, 0);
+        ctx.lineTo(i * CELL, height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i * CELL);
+        ctx.lineTo(width, i * CELL);
+        ctx.stroke();
+    }
+
+    // Desenha o alimento.
+    const fx = (food.x + 0.5) * CELL;
+    const fy = (food.y + 0.5) * CELL;
+
+    ctx.save();
+
+    ctx.shadowColor = "#ff647c";
+    ctx.shadowBlur = 19;
+    ctx.fillStyle = "#ff647c";
+
+    ctx.beginPath();
+    ctx.arc(fx, fy, CELL * 0.31, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#ffd3dc";
+
+    ctx.beginPath();
+    ctx.arc(
+        fx - CELL * 0.09,
+        fy - CELL * 0.1,
+        CELL * 0.08,
+        0,
+        Math.PI * 2
+    );
+    ctx.fill();
+
+    ctx.strokeStyle = "#59f2a6";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(fx, fy - CELL * 0.27);
+    ctx.quadraticCurveTo(
+        fx + CELL * 0.1,
+        fy - CELL * 0.48,
+        fx + CELL * 0.24,
+        fy - CELL * 0.35
+    );
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Desenha a cobra.
+    snake.forEach((part, index) => {
+        const padding = index === 0 ? 2.2 : 3.1;
+
+        const x = part.x * CELL + padding;
+        const y = part.y * CELL + padding;
+        const size = CELL - padding * 2;
+
+        const color = LEVELS[selectedLevel].color;
+
+        ctx.save();
+
+        ctx.shadowColor = color;
+        ctx.shadowBlur = index === 0 ? 13 : 5;
+
+        if (index === 0) {
+            ctx.fillStyle = color;
+        } else {
+            ctx.fillStyle =
+                index % 2 === 0 ? "#30c985" : "#25ad78";
+        }
+
+        roundedRect(
+            x,
+            y,
+            size,
+            size,
+            index === 0 ? 6 : 5
+        );
+
+        ctx.fill();
+        ctx.restore();
+
+        // Olhos da cabeça, orientados conforme a direção.
+        if (index === 0) {
+            ctx.fillStyle = "#09251b";
+
+            let eyes;
+
+            if (direction.x === 1) {
+                eyes = [
+                    [x + size * 0.70, y + size * 0.30],
+                    [x + size * 0.70, y + size * 0.70]
+                ];
+            } else if (direction.x === -1) {
+                eyes = [
+                    [x + size * 0.30, y + size * 0.30],
+                    [x + size * 0.30, y + size * 0.70]
+                ];
+            } else if (direction.y === -1) {
+                eyes = [
+                    [x + size * 0.30, y + size * 0.30],
+                    [x + size * 0.70, y + size * 0.30]
+                ];
+            } else {
+                eyes = [
+                    [x + size * 0.30, y + size * 0.70],
+                    [x + size * 0.70, y + size * 0.70]
+                ];
+            }
+
+            eyes.forEach(([eyeX, eyeY]) => {
+                ctx.beginPath();
+                ctx.arc(eyeX, eyeY, 2.1, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+    });
+}
+
+
+/* =========================================
+   10. EVENTOS DO TECLADO
+========================================= */
+
+document.addEventListener("keydown", event => {
+    const keys = {
+        ArrowUp: "up",
+        w: "up",
+        W: "up",
+
+        ArrowDown: "down",
+        s: "down",
+        S: "down",
+
+        ArrowLeft: "left",
+        a: "left",
+        A: "left",
+
+        ArrowRight: "right",
+        d: "right",
+        D: "right"
+    };
+
+    if (keys[event.key]) {
+        event.preventDefault();
+
+        if (state === STATE.READY) {
+            setDirection(keys[event.key]);
+            startGame();
+        } else {
+            setDirection(keys[event.key]);
+        }
+    }
+
+    if (event.code === "Space") {
+        event.preventDefault();
+
+        if (
+            state === STATE.RUNNING ||
+            state === STATE.PAUSED
+        ) {
+            togglePause();
+        } else if (state === STATE.READY) {
+            startGame();
+        }
+    }
+
+    if (
+        event.key === "Enter" &&
+        (state === STATE.READY || state === STATE.OVER)
+    ) {
+        startGame();
+    }
+});
+
+
+/* =========================================
+   11. EVENTOS DOS CONTROLES E BOTÕES
+========================================= */
+
+// Controles direcionais para celulares e tablets.
+document.querySelectorAll(".pad").forEach(button => {
+    button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+
+        setDirection(button.dataset.dir);
+
+        if (state === STATE.READY) {
+            startGame();
+        }
+    });
+});
+
+// Seleção de dificuldade.
+document.querySelectorAll(".diff").forEach(button => {
+    button.addEventListener("click", () => {
+        chooseLevel(button.dataset.level);
+    });
+});
+
+// Iniciar ou continuar.
+$("startBtn").addEventListener("click", () => {
+    if (state === STATE.PAUSED) {
+        togglePause();
+    } else {
+        startGame();
+    }
+});
+
+// Pausar ou retomar.
+$("pauseBtn").addEventListener("click", togglePause);
+
+// Reiniciar a partida.
+$("restartBtn").addEventListener("click", () => {
+    resetGame();
+
+    showOverlay(
+        "🐍",
+        "Nova partida",
+        "Dificuldade: " + LEVELS[selectedLevel].name +
+            ". Pronto para tentar outra vez?",
+        "Iniciar jogo",
+        startGame
+    );
+});
+
+// Pausa automaticamente quando a aba fica oculta.
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && state === STATE.RUNNING) {
+        togglePause();
+    }
+});
+
+
+/* =========================================
+   12. INICIALIZAÇÃO DO JOGO
+========================================= */
+
+updateStats();
+resetGame();
+
+showOverlay(
+    "🐍",
+    "Pronto para jogar?",
+    "Colete as frutas, cresça e tente bater seu recorde. " +
+        "Não encoste nas paredes nem em você mesmo!",
+    "Iniciar jogo",
+    startGame
+);
+
+</script>
+</body>
+</html>
+```
